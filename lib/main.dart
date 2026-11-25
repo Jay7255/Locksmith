@@ -1,10 +1,13 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
+import 'game_source.dart';
 import 'save_inject.dart';
 import 'services/ads.dart';
 
@@ -57,16 +60,34 @@ class _GamePageState extends State<GamePage> {
 
   Future<void> _load() async {
     _prefs = await SharedPreferences.getInstance();
-    final html = injectSave(
-      await rootBundle.loadString('assets/game/index.html'),
-      _prefs!.getString('save'),
-    );
+    final bundled = await rootBundle.loadString('assets/game/index.html');
+    final game = chooseGame(bundled: bundled, cached: _prefs!.getString('game_html'));
+    final html = injectSave(game, _prefs!.getString('save'));
+    unawaited(_downloadLatestGame(gameVersion(bundled)));
     final web = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setBackgroundColor(const Color(0xFF0E1522))
       ..addJavaScriptChannel('AdBridge', onMessageReceived: _onMessage)
       ..loadHtmlString(html, baseUrl: 'https://locksmith.game/');
     if (mounted) setState(() => _web = web);
+  }
+
+  /// Fetches the newest game page in the background for next time.
+  Future<void> _downloadLatestGame(int bundledVersion) async {
+    final client = HttpClient()..connectionTimeout = const Duration(seconds: 8);
+    try {
+      final req = await client.getUrl(Uri.parse(remoteGameUrl));
+      final res = await req.close().timeout(const Duration(seconds: 15));
+      if (res.statusCode != 200) return;
+      final body = await res.transform(utf8.decoder).join().timeout(const Duration(seconds: 20));
+      if (isUsableGame(body, bundledVersion)) {
+        await _prefs?.setString('game_html', body);
+      }
+    } catch (_) {
+      // Offline or slow: keep the version we have.
+    } finally {
+      client.close();
+    }
   }
 
   Future<void> _onMessage(JavaScriptMessage message) async {

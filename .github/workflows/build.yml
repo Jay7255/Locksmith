@@ -37,6 +37,18 @@ jobs:
       - run: flutter pub get
       - run: flutter analyze --no-fatal-infos
       - run: flutter test
+      - name: Sign with the project's own key (from the SIGNING_KEYSTORE secret)
+        env:
+          KEYSTORE_B64: ${{ secrets.SIGNING_KEYSTORE }}
+        run: |
+          if [ -n "$KEYSTORE_B64" ]; then
+            mkdir -p ~/.android
+            echo "$KEYSTORE_B64" | base64 -d > ~/.android/debug.keystore
+            echo "Signing with the project key: updates install over the old app."
+          else
+            echo "::warning::No SIGNING_KEYSTORE secret yet. This build uses a temporary key, so phones must uninstall the old app first. See README: 'Updating the app'."
+          fi
+
       - run: flutter build apk --release
 
       - name: Publish APK to the "latest" release

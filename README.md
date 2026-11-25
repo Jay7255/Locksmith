@@ -146,6 +146,30 @@ The package name is `com.jonathangames.locksmith`. It can never change once the 
 
 ---
 
+## Updating the app
+
+There are two kinds of update:
+
+**Game changes** (new locks, levels, fixes inside the game) reach phones by themselves. Each time the app opens, it quietly downloads the newest `assets/game/index.html` from this repository and uses it the *next* time it opens. So: change the game → push to `main` → players get it after opening the app twice. No reinstall. If the phone is offline, the app plays the last version it has. Raise `<meta name="game-version" content="N">` when you change the game.
+
+**App changes** (ads, Android settings, `lib/*.dart`) need a new APK. Every push to `main` builds one at the same link. Before Google Play, you install it over the old one; after Google Play, players get it as a normal store update.
+
+### One-time: make updates install over the old app
+
+Android only installs an update over an app signed with the **same key**. Until you do this once, each GitHub build uses a new random key, so you must uninstall the old app first, which wipes progress.
+
+1. On your PC (with Android Studio installed), in the project folder:
+   ```
+   powershell -ExecutionPolicy Bypass -File tool\make_signing_key.ps1
+   ```
+2. On GitHub: **Locksmith → Settings → Secrets and variables → Actions → New repository secret**. Name `SIGNING_KEYSTORE`, paste (Ctrl+V), **Add secret**.
+3. Make any change (or **Actions → Build Android APK → Run workflow**) to build with the new key.
+4. On the phone, uninstall Locksmith **one last time** and install the new APK. From then on, every update installs over it.
+
+This is a test key. For Google Play you'll make a separate upload key (see Part 2, Step 7).
+
+---
+
 ## Tuning the game
 
 Everything is in `assets/game/index.html`:

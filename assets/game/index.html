@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<meta name="game-version" content="4">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Locksmith</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -92,14 +93,19 @@ button:focus-visible{outline:3px solid #80deea;outline-offset:2px}
 {
 // ===================================================================== shared
 const $ = id => document.getElementById(id);
-const cv = $('cv'), ctx = cv.getContext('2d'), stage = $('stage');
+const cv = $('cv'), ctx = cv.getContext('2d', { alpha: false }), stage = $('stage');
+// Performance: Q.dpr caps canvas sharpness; Q.lite turns shadows off on slow phones.
+const Q = { dpr: 2, lite: false, samples: [], lastRender: 0, hotUntil: 0, tweens: 0 };
+{ const d = Object.getOwnPropertyDescriptor(CanvasRenderingContext2D.prototype, 'shadowBlur');
+  Object.defineProperty(ctx, 'shadowBlur', { set(v) { d.set.call(this, Q.lite ? 0 : Math.min(v, 8)); }, get() { return d.get.call(this); } }); }
+const wake = (ms = 400) => { Q.hotUntil = Math.max(Q.hotUntil, performance.now() + ms); };
 const rng = s => () => { s |= 0; s = s + 0x6D2B79F5 | 0; let t = Math.imul(s ^ s >>> 15, 1 | s); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
 const pickR = (a, r) => a[Math.floor(r() * a.length)];
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const wait = ms => new Promise(r => setTimeout(r, ms));
 const inOut = t => t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
 const outBack = t => 1 + 2.7 * Math.pow(t - 1, 3) + 1.7 * Math.pow(t - 1, 2);
-function tween(o, key, to, ms, ease = t => t, onStep) { const from = o[key] ?? 0, s = performance.now(); return new Promise(res => { const step = now => { const t = Math.min(1, (now - s) / ms); o[key] = from + (to - from) * ease(t); onStep && onStep(); t < 1 ? requestAnimationFrame(step) : res(); }; requestAnimationFrame(step); }); }
+function tween(o, key, to, ms, ease = t => t, onStep) { const from = o[key] ?? 0, s = performance.now(); Q.tweens++; return new Promise(res => { const step = now => { const t = Math.min(1, (now - s) / ms); o[key] = from + (to - from) * ease(t); onStep && onStep(); if (t < 1) requestAnimationFrame(step); else { Q.tweens--; wake(); res(); } }; requestAnimationFrame(step); }); }
 const rr = (x, y, w, h, r) => { ctx.beginPath(); ctx.roundRect(x, y, w, h, r); };
 function lin(x0, y0, x1, y1, stops) { const g = ctx.createLinearGradient(x0, y0, x1, y1); stops.forEach((c, i) => g.addColorStop(i / (stops.length - 1), c)); return g; }
 const brassV = (y0, y1) => lin(0, y0, 0, y1, ['#f3db8e', '#d9b354', '#8a6a1f']);
@@ -264,7 +270,7 @@ function drawKey(cuts, sx, floor, u, squash = 1, ghost = null) {
 function drawPadlockBody(bx, by, bw, bh, colors, shackleLift, sw) {
   const scx = bx + bw / 2, th = Math.max(10, sw * .16), lift = shackleLift;
   ctx.save(); ctx.beginPath(); ctx.rect(0, -80, 4000, by + 82); ctx.clip();
-  const arcY = by - sw * .9 + sw / 2 - lift;
+  const arcY = Math.max(th / 2 + 2, by - sw * .9) + sw / 2 - lift;
   ctx.beginPath(); ctx.moveTo(scx - sw / 2, by + 4 - lift); ctx.lineTo(scx - sw / 2, arcY); ctx.arc(scx, arcY, sw / 2, Math.PI, 0); ctx.lineTo(scx + sw / 2, by + 30);
   ctx.strokeStyle = steelH(scx - sw / 2 - th, scx + sw / 2 + th); ctx.lineWidth = th; ctx.stroke(); ctx.restore();
   const g = lin(0, by, 0, by + bh, colors);
@@ -280,6 +286,7 @@ const KeyMode = {
     this.shift = this.idle();
   },
   idle() { return -(this.n + TIP + .2); },
+  animating(now) { return now - this.flashT < 420 || (Math.abs(this.shift - this.idle()) < .01 && G.tries < 2 && G.timerOn); },
   time() { return squeeze(this.clear ? 60 : 25 + this.n * 9 + this.depths * 3); },
   par() { return this.clear ? 2 : Math.ceil(this.depths * .6) + 1; },
   chips() { return [`🔑 × ${this.blanks}`, `${this.n} pins · depths 0–${this.depths - 1}`, this.clear ? 'See-through' : 'Real lock']; },
@@ -397,6 +404,7 @@ const ComboMode = {
     Object.assign(this, { n, secret, clues, wheel: Array(n).fill(0), marks: clues.map(c => c.g.map(() => tool('notebook') >= 2 && !c.a && !c.b ? 1 : 0)), known: [], shackle: 0, rattle: 0, drag: null, tiles: [] });
   },
   time() { return squeeze(this.n === 3 ? 100 : 150); },
+  animating() { return this.rattle > 0; },
   par() { return 1; },
   digits() { return this.wheel.map(w => ((Math.round(w) % 10) + 10) % 10); },
   chips() { return [`🔢 ${this.n} digits · ${this.clues.length} clues`, `Wrong guess −${tool('notebook') >= 1 ? 5 : 8} s`]; },
@@ -479,6 +487,7 @@ const PickMode = {
     Object.assign(this, { n, order, keyPin, see: tier <= 2, set: Array(n).fill(false), lift: Array(n).fill(0), over: -1, active: -1, drag: null, turn: 0, door: 0, inWin: false, glow: -1, glowT: 0, feel: 0, raking: false });
   },
   target(i) { return KS - REST - this.keyPin[i]; },
+  animating(now) { return now < this.glowT; },
   win() { return .07 + .025 * tool('pick'); },
   binding() { return this.order.find(i => !this.set[i]); },
   time() { return squeeze(35 + this.n * 14); },
@@ -571,6 +580,7 @@ const SafeMode = {
     Object.assign(this, { N, combo, dirs: [1, -1, 1], k: 0, known, theta: 0, lastDir: 0, lastMove: 0, wrong: 0, scope: [], handle: 0, door: 0, drag: null, caught: [] });
   },
   num() { return ((Math.round(-this.theta * this.N / (2 * Math.PI)) % this.N) + this.N) % this.N; },
+  animating(now) { return this.scope.some(s => now - s.t < 2600) || (this.lastMove && now - this.lastMove < 700); },
   time() { return squeeze(110); },
   par() { return 1; },
   chips() { return [`🏦 Wheels ${this.k}/3`, `Dial 0–${this.N - 1}`]; },
@@ -666,6 +676,7 @@ const KeypadMode = {
     const [a, b] = this.history[this.history.length - 1].f; return `Last try: 🟢 ${a} right place · 🟡 ${b} right digit, wrong place.`;
   },
   buttons() { return { a: ['🌡', `Thermal ×${this.thermal}`, () => this.useThermal(), this.thermal > 0 && this.thermalOn <= 0], b: ['💡', 'Hint', () => hintMenu(), true], m: ['Enter ✓', () => this.submit(), this.entry.length === 4] }; },
+  animating(now) { return this.thermalOn > 0 || now < this.lockedUntil || now - this.pressT < 200 || now - this.lcdT < 950; },
   useThermal() { if (this.thermal <= 0) return; this.thermal--; this.thermalOn = 1; tone(800, .08, 'sine', .08, 2); tween(this, 'thermalOn', 0, 4000, t => t * t * t); ui(); },
   draw(now, W, H) {
     const dw = Math.min(W - 30, 330), k = Math.min((dw - 60) / 3, (H - 190) / 4.4), dh = k * 4 + 64 + 120, dx = (W - dw) / 2, dy = Math.max(8, (H - dh) / 2);
@@ -792,15 +803,23 @@ function tick(now) {
   if (running && G.timeLeft <= 0 && !G.busy && !(G.M.dragging && G.M.dragging())) timeUp();
 }
 function draw(now) {
-  const dpr = devicePixelRatio || 1, W = stage.clientWidth, H = stage.clientHeight;
+  tick(now);
+  // Redraw at full speed only while something moves; otherwise a few times a second.
+  const moving = ptr || Q.tweens > 0 || now < Q.hotUntil || FX.sparks.length || (FX.parts.length && now - FX.t0 < 1400) || G.M.animating?.(now);
+  if (!moving && now - Q.lastRender < 110) { requestAnimationFrame(draw); return; }
+  Q.lastRender = now; const t0 = performance.now();
+  const dpr = Math.min(devicePixelRatio || 1, Q.dpr), W = stage.clientWidth, H = stage.clientHeight;
   if (cv.width !== Math.round(W * dpr) || cv.height !== Math.round(H * dpr)) { cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); }
-  ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, W, H);
-  tick(now); if (G.M.frame) G.M.frame(now);
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.fillStyle = '#0e1522'; ctx.fillRect(0, 0, W, H);
+  if (G.M.frame) G.M.frame(now);
   G.M.draw(now, W, H);
   FX.sparks = FX.sparks.filter(p => now - p.t0 < 450);
   for (const p of FX.sparks) { const k = (now - p.t0) / 450, x = p.x + p.vx * k, y = p.y + p.vy * k + 60 * k * k; ctx.strokeStyle = `rgba(255,${180 + 60 * (1 - k)},80,${1 - k})`; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x - p.vx * .05, y - p.vy * .05); ctx.stroke(); }
   const t = (now - FX.t0) / 1000;
   if (FX.parts.length && t < 1.4) for (const p of FX.parts) { ctx.save(); ctx.translate(p.x + p.vx * t, p.y + p.vy * t + 520 * t * t); ctx.rotate(p.s + t * 8); ctx.globalAlpha = 1 - t / 1.4; ctx.fillStyle = p.col; ctx.fillRect(-p.z, -p.z / 2, p.z * 2, p.z); ctx.restore(); }
+  // If drawing is slow on this phone, drop sharpness and shadows once.
+  Q.samples.push(performance.now() - t0); if (Q.samples.length > 40) Q.samples.shift();
+  if (!Q.lite && Q.samples.length >= 20 && Q.samples.reduce((a, b) => a + b) / Q.samples.length > 12) { Q.lite = true; Q.dpr = 1.5; Q.samples = []; }
   requestAnimationFrame(draw);
 }
 
@@ -808,13 +827,13 @@ function draw(now) {
 const local = e => { const b = cv.getBoundingClientRect(); return [e.clientX - b.left, e.clientY - b.top]; };
 let ptr = false;
 stage.addEventListener('pointerdown', e => { if (G.busy || !G.timerOn || G.modal) return; const [x, y] = local(e); if (G.M.down(x, y)) { ptr = true; stage.setPointerCapture(e.pointerId); } });
-stage.addEventListener('pointermove', e => { if (!ptr) return; const [x, y] = local(e); G.M.move(x, y); });
+stage.addEventListener('pointermove', e => { if (!ptr) return; const [x, y] = local(e); G.M.move(x, y); wake(); });
 const end = () => { if (!ptr) return; ptr = false; G.M.up(); ui(); };
 stage.addEventListener('pointerup', end); stage.addEventListener('pointercancel', end);
 
 // ===================================================================== UI
 function ui() {
-  const M = G.M;
+  wake(); const M = G.M;
   $('title').textContent = `${ICON[G.mode]} ${G.daily ? 'Daily' : '#' + save.level} ${SHORT[G.mode]}`;
   $('daily').style.opacity = save.dailyDone === todayStr() ? .45 : 1;
   $('coins').textContent = `● ${save.coins} ＋`;
@@ -843,7 +862,7 @@ $('gear').onclick = async () => {
   if (c === 'p') toNative({ type: 'privacy' });
   if (c === 's') { save.sound = !save.sound; persist(); }
   if (c === 'h') await howto();
-  if (c === 'c') await modal(`<h2>🔐 Locksmith</h2><div class="ticket"><small>GAME IDEA</small><b>Emma Chilufya</b><small style="margin-top:10px">MADE BY</small><b>Jonathan</b></div><p class="credit">Thank you for playing!</p><button class="big" id="ok">Close</button>`, { ok: 1 });
+  if (c === 'c') await modal(`<h2>🔐 Locksmith</h2><div class="ticket"><small>GAME IDEA</small><b>Emma Chilufya</b><small style="margin-top:10px">MADE BY</small><b>Jonathan</b></div><p class="credit">Thank you for playing! · Game version ${document.querySelector('meta[name=game-version]').content}</p><button class="big" id="ok">Close</button>`, { ok: 1 });
   let jump = null;
   if (typeof c === 'string' && c[0] === 't') jump = (tierOf(save.level) - 1) * 5 + Number(c[1]) + 1;
   if (c === 5 || c === -5) jump = Math.max(1, save.level + c);
