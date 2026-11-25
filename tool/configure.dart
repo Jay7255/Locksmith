@@ -5,7 +5,7 @@
 // them with your own app IDs from the AdMob dashboard and run this again.
 import 'dart:io';
 
-const androidAppId = 'ca-app-pub-3940256099942544~3347511713';
+const androidAppId = 'ca-app-pub-6069109150798699~7115598219';
 const iosAppId = 'ca-app-pub-3940256099942544~1458002511';
 const appName = 'Locksmith';
 

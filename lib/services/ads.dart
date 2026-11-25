@@ -8,25 +8,25 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 /// fill, never pay, and are safe to tap. Before release, set [useTestAds]
 /// to false and paste your own IDs from the AdMob dashboard.
 class AdIds {
-  static const bool useTestAds = true;
+  static const bool useTestAds = false;
 
   static String get banner => useTestAds
       ? (Platform.isAndroid
           ? 'ca-app-pub-3940256099942544/6300978111'
           : 'ca-app-pub-3940256099942544/2934735716')
-      : (Platform.isAndroid ? 'YOUR_ANDROID_BANNER_ID' : 'YOUR_IOS_BANNER_ID');
+      : (Platform.isAndroid ? 'ca-app-pub-6069109150798699/3715922602' : 'YOUR_IOS_BANNER_ID');
 
   static String get interstitial => useTestAds
       ? (Platform.isAndroid
           ? 'ca-app-pub-3940256099942544/1033173712'
           : 'ca-app-pub-3940256099942544/4411468910')
-      : (Platform.isAndroid ? 'YOUR_ANDROID_INTERSTITIAL_ID' : 'YOUR_IOS_INTERSTITIAL_ID');
+      : (Platform.isAndroid ? 'ca-app-pub-6069109150798699/7603196721' : 'YOUR_IOS_INTERSTITIAL_ID');
 
   static String get rewarded => useTestAds
       ? (Platform.isAndroid
           ? 'ca-app-pub-3940256099942544/5224354917'
           : 'ca-app-pub-3940256099942544/1712485313')
-      : (Platform.isAndroid ? 'YOUR_ANDROID_REWARDED_ID' : 'YOUR_IOS_REWARDED_ID');
+      : (Platform.isAndroid ? 'ca-app-pub-6069109150798699/5348181437' : 'YOUR_IOS_REWARDED_ID');
 }
 
 /// Loads and shows ads. Asks for consent first (required in the EU/UK),
