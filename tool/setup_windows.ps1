@@ -70,6 +70,7 @@ function Install-Locksmith {
   }
   dart run tool/configure.dart
   flutter pub get
+  dart run flutter_launcher_icons
   flutter test
 
   # ---- 6. Build the APK ----

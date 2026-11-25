@@ -35,6 +35,8 @@ jobs:
           dart run tool/configure.dart
 
       - run: flutter pub get
+      - name: Make the app icon
+        run: dart run flutter_launcher_icons
       - run: flutter analyze --no-fatal-infos
       - run: flutter test
       - name: Sign with the project's own key (from the SIGNING_KEYSTORE secret)
