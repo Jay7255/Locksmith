@@ -1,4 +1,62 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Locksmith</title>
-<style>body{margin:0;background:#0e1522;color:#eef1f6;font:17px/1.6 system-ui,sans-serif;display:grid;place-items:center;min-height:100vh;text-align:center}img{width:160px;border-radius:36px}a{color:#ffc23d}</style></head>
-<body><main><img src="icon.png" alt="Locksmith app icon"><h1>Locksmith</h1><p>Cut keys, crack padlocks, pick doors, open safes and keypads.</p>
-<p><a href="https://github.com/Jay7255/Locksmith/releases/download/latest/locksmith.apk">Download for Android</a> · <a href="privacy.html">Privacy policy</a></p><p style="color:#9aa7ba">Game idea by Emma Chilufya · Made by Jonathan</p></main></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Locksmith – cut keys, crack codes, pick locks, open safes</title>
+<meta name="description" content="Locksmith is a free Android puzzle game: cut keys, solve padlock clues, pick door locks, crack safes and keypads.">
+<meta property="og:title" content="Locksmith">
+<meta property="og:description" content="Can you open every lock? Cut keys, crack codes, pick doors and open safes. Free on Android.">
+<meta property="og:image" content="https://jay7255.github.io/Locksmith/img/share.png">
+<meta property="og:url" content="https://jay7255.github.io/Locksmith/">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="icon.png">
+<style>
+  :root{--gold:#ffc23d}
+  *{box-sizing:border-box}
+  body{margin:0;color:#fff;font:17px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:radial-gradient(120% 60% at 50% 30%,#e8551f 0,#5a1a4a 45%,#140c2a 100%) fixed}
+  header{text-align:center;padding:56px 20px 24px}
+  header img{width:132px;border-radius:30px;box-shadow:0 12px 30px #0008}
+  h1{font-size:clamp(40px,8vw,64px);line-height:1;margin:18px 0 8px}
+  .tag{color:#ffe9b0;font-size:20px;margin:0}
+  .cta{display:inline-block;margin:24px 0 6px;padding:16px 30px;border-radius:18px;background:linear-gradient(90deg,#ffb300,#ff7a00);color:#3a1f00;font-weight:800;text-decoration:none;font-size:19px;box-shadow:0 8px 20px #0006}
+  .small{color:#ffffffaa;font-size:14px}
+  .gallery{display:flex;gap:16px;overflow-x:auto;scroll-snap-type:x mandatory;padding:18px max(5vw,16px) 30px}
+  .gallery img{flex:none;width:min(260px,70vw);aspect-ratio:9/16;border-radius:22px;scroll-snap-align:center;box-shadow:0 14px 30px #0008}
+  section{max-width:760px;margin:0 auto;padding:10px 20px 40px}
+  .locks{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;padding:0;list-style:none}
+  .locks li{background:#ffffff12;border-radius:16px;padding:14px 16px}
+  .locks b{display:block;font-size:18px}
+  footer{text-align:center;color:#ffffffaa;font-size:14px;padding:20px 20px 40px}
+  a{color:var(--gold)}
+</style>
+</head>
+<body>
+<header>
+  <img src="icon.png" alt="Locksmith app icon">
+  <h1>Locksmith</h1>
+  <p class="tag">Can you open every lock?</p>
+  <a class="cta" href="https://github.com/Jay7255/Locksmith/releases/download/latest/locksmith.apk">Download for Android</a>
+  <div class="small">Free · about 46 MB · Android 7 and newer</div>
+</header>
+<div class="gallery" aria-label="Screenshots">
+  <img src="img/01-key-cutting.jpg" alt="Cutting a key so every pin meets the shear line">
+  <img src="img/03-combination-padlock.jpg" alt="Combination padlock with clue notes">
+  <img src="img/04-door-picking.jpg" alt="Picking a door lock pin by pin">
+  <img src="img/05-safe-cracking.jpg" alt="Cracking a safe with the stethoscope">
+  <img src="img/06-keypad-thermal.jpg" alt="Electronic keypad seen through a thermal camera">
+  <img src="img/08-daily-job.jpg" alt="Daily job ticket">
+</div>
+<section>
+  <ul class="locks">
+    <li><b>🔑 Cut a key</b>Grind each tooth so the pins line up, then swipe the key in.</li>
+    <li><b>🔢 Crack the code</b>Classic clue puzzles on combination padlocks.</li>
+    <li><b>🚪 Pick the door</b>Lift the binding pin until it clicks. Don’t overset!</li>
+    <li><b>🏦 Open the safe</b>Spin the dial and watch the stethoscope spike.</li>
+    <li><b>📟 Beat the keypad</b>Smudges and a thermal camera give the PIN away.</li>
+    <li><b>📅 Daily job</b>A new lock every day for triple coins, plus tool upgrades.</li>
+  </ul>
+</section>
+<footer>Game idea by Emma Chilufya · Made by Jonathan · <a href="privacy.html">Privacy policy</a></footer>
+</body>
+</html>
