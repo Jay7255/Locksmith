@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="game-version" content="4">
+<meta name="game-version" content="5">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Locksmith</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -853,16 +853,22 @@ const howto = () => modal(`<h2>The locksmith’s handbook</h2><div class="how">
   <div><i>📅</i><span>A <b>daily job</b> pays triple. Spend coins on <b>tools</b> in the 🛠 workshop.</span></div>
   <div><i>⏱</i><span>Beat the clock. Time left pays a bonus; three fast jobs in a row double your coins.</span></div></div><p class="credit">Game idea by <b>Emma Chilufya</b></p><button class="big" id="ok">Let’s work</button>`, { ok: 1 });
 $('gear').onclick = async () => {
-  const c = await modal(`<h2>Settings</h2><button class="big alt sm" id="snd">Sound: ${save.sound ? 'on' : 'off'}</button><button class="big alt sm" id="how">Locksmith’s handbook</button><button class="big alt sm" id="cred">Credits</button>
+  const c = await modal(`<h2>Settings</h2><button class="big alt sm" id="snd">Sound: ${save.sound ? 'on' : 'off'}</button><button class="big alt sm" id="how">Locksmith’s handbook</button><button class="big alt sm" id="cred">Credits</button><button class="big alt sm" id="pol">Privacy policy</button>
     <p style="margin-top:4px">Testing: jump to a job</p>
     <div class="grid2"><button class="big alt sm" id="t0">🔑 Key</button><button class="big alt sm" id="t1">🔢 Combo</button><button class="big alt sm" id="t2">🚪 Door</button><button class="big alt sm" id="t3">🏦 Safe</button><button class="big alt sm" id="t4">📟 Keypad</button><button class="big alt sm" id="tx" disabled>&nbsp;</button>
     <button class="big alt sm" id="dn">− Level</button><button class="big alt sm" id="up">+ Level</button></div>
     ${NATIVE ? '<button class="big alt sm" id="prv">Privacy & ad choices</button>' : ''}<button class="big alt sm" id="rst">Reset progress</button><button class="big sm" id="cl">Close</button>`,
-    { snd: 's', how: 'h', cred: 'c', t0: 't0', t1: 't1', t2: 't2', t3: 't3', t4: 't4', dn: -5, up: 5, rst: 'r', prv: 'p', cl: 0 });
+    { snd: 's', how: 'h', cred: 'c', pol: 'pol', t0: 't0', t1: 't1', t2: 't2', t3: 't3', t4: 't4', dn: -5, up: 5, rst: 'r', prv: 'p', cl: 0 });
   if (c === 'p') toNative({ type: 'privacy' });
   if (c === 's') { save.sound = !save.sound; persist(); }
   if (c === 'h') await howto();
   if (c === 'c') await modal(`<h2>🔐 Locksmith</h2><div class="ticket"><small>GAME IDEA</small><b>Emma Chilufya</b><small style="margin-top:10px">MADE BY</small><b>Jonathan</b></div><p class="credit">Thank you for playing! · Game version ${document.querySelector('meta[name=game-version]').content}</p><button class="big" id="ok">Close</button>`, { ok: 1 });
+  if (c === 'pol') await modal(`<h2>Privacy policy</h2><div class="how" style="font-size:14px">
+    <div><i>📱</i><span>No account, no name, email, contacts, photos or location. Your progress is saved only on this phone.</span></div>
+    <div><i>📺</i><span>Ads come from <b>Google AdMob</b>. Google may use your device’s advertising ID and IP address to show and measure ads. Change ad choices in ⚙ Settings → Privacy &amp; ad choices, or in your phone’s Google → Ads settings.</span></div>
+    <div><i>🔄</i><span>The app downloads game updates from GitHub and its font from Google Fonts.</span></div>
+    <div><i>🧒</i><span>Not directed at children under 13. We don’t sell personal information.</span></div></div>
+    <p class="credit">Full policy:<br><b style="user-select:text">jay7255.github.io/Locksmith/privacy.html</b></p><button class="big" id="ok">Close</button>`, { ok: 1 });
   let jump = null;
   if (typeof c === 'string' && c[0] === 't') jump = (tierOf(save.level) - 1) * 5 + Number(c[1]) + 1;
   if (c === 5 || c === -5) jump = Math.max(1, save.level + c);
