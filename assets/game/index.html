@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="game-version" content="5">
+<meta name="game-version" content="6">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Locksmith</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -762,7 +762,7 @@ async function win() {
   if (G.daily) { const y = new Date(Date.now() - 864e5), ys = `${y.getFullYear()}-${String(y.getMonth() + 1).padStart(2, '0')}-${String(y.getDate()).padStart(2, '0')}`; save.dailyStreak = save.dailyDone === ys ? (save.dailyStreak || 0) + 1 : 1; save.dailyDone = todayStr(); }
   floatText(`+${total}${mult > 1 ? ' 🔥×2' : ''}`);
   await wait(500);
-  const c = await modal(`<h2>${{ key: 'Key fits!', combo: 'Cracked the code!', pick: 'Door open!', safe: 'Safe cracked!' }[G.mode]}</h2>
+  const c = await modal(`<h2>${{ key: 'Key fits!', combo: 'Cracked the code!', pick: 'Door open!', safe: 'Safe cracked!', keypad: 'Access granted!' }[G.mode]}</h2>
     <div class="stars">${[0, 1, 2].map(i => `<span class="${i < s ? 'on' : ''}">★</span>`).join('')}</div>
     <p>${G.job[0]} is very happy.<br>Time bonus +${timeBonus}${G.streak >= 2 ? ` · 🔥 streak ${G.streak}${mult > 1 ? ' (coins ×2)' : ''}` : ''}${G.daily ? `<br>📅 Daily streak: ${save.dailyStreak} day${save.dailyStreak > 1 ? 's' : ''}` : ''}</p>
     ${after !== before ? `<p class="rank">🎖 Promoted: ${after}!</p>` : ''}
